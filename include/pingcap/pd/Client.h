@@ -17,10 +17,9 @@
 #include <shared_mutex>
 #include <thread>
 
-namespace pingcap
+namespace pingcap::pd
 {
-namespace pd
-{
+
 class Client : public IClient
 {
     const int max_init_cluster_retries;
@@ -60,6 +59,10 @@ public:
     uint64_t getGCSafePoint() override;
 
     uint64_t getGCSafePointV2(KeyspaceID keyspace_id) override;
+
+    pdpb::GetGCStateResponse getGCState(KeyspaceID keyspace_id) override;
+
+    pdpb::GetAllKeyspacesGCStatesResponse getAllKeyspacesGCStates() override;
 
     KeyspaceID getKeyspaceID(const std::string & keyspace_name) override;
 
@@ -153,5 +156,4 @@ private:
 };
 
 
-} // namespace pd
-} // namespace pingcap
+} // namespace pingcap::pd
