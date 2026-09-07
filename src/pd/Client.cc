@@ -365,54 +365,6 @@ uint64_t Client::getGCSafePointV2(KeyspaceID keyspace_id)
     return response.safe_point();
 }
 
-pdpb::GetGCStateResponse Client::getGCState(KeyspaceID keyspace_id)
-{
-    pdpb::GetGCStateRequest request{};
-    auto * header = requestHeader();
-    header->set_cluster_id(cluster_id);
-    header->set_caller_id("tiflash");
-    request.set_allocated_header(header);
-    request.mutable_keyspace_scope()->set_keyspace_id(keyspace_id);
-
-    auto leader_client = leaderClient();
-    grpc::ClientContext context;
-    context.set_deadline(std::chrono::system_clock::now() + pd_timeout);
-
-    pdpb::GetGCStateResponse response{};
-    auto status = leader_client->stub->GetGCState(&context, request, &response);
-    if (!status.ok())
-    {
-        std::string err_msg = "GetGCState failed, keyspace_id=" + std::to_string(keyspace_id) + ": " + std::to_string(status.error_code()) + ": " + status.error_message();
-        log->warning(err_msg);
-        check_leader.store(true);
-        throw Exception(err_msg, status.error_code());
-    }
-
-    return response;
-}
-
-pdpb::GetAllKeyspacesGCStatesResponse Client::getAllKeyspacesGCStates()
-{
-    pdpb::GetAllKeyspacesGCStatesRequest request{};
-    request.set_allocated_header(requestHeader());
-
-    auto leader_client = leaderClient();
-    grpc::ClientContext context;
-    context.set_deadline(std::chrono::system_clock::now() + pd_timeout);
-
-    pdpb::GetAllKeyspacesGCStatesResponse response{};
-    auto status = leader_client->stub->GetAllKeyspacesGCStates(&context, request, &response);
-    if (!status.ok())
-    {
-        std::string err_msg = "GetAllKeyspacesGCStates failed: " + std::to_string(status.error_code()) + ": " + status.error_message();
-        log->warning(err_msg);
-        check_leader.store(true);
-        throw Exception(err_msg, status.error_code());
-    }
-
-    return response;
-}
-
 pdpb::GetRegionResponse Client::getRegionByKey(const std::string & key)
 {
     pdpb::GetRegionRequest request{};
