@@ -80,7 +80,6 @@ struct CopTask
     int64_t table_id;
     int64_t index_id;
     std::string executor_id;
-    uint64_t prefer_store_id = 0;
 };
 
 struct RegionInfo
